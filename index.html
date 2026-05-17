@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" class="hide-scrollbar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bentolio recreation with matching bento layout and interactions.">
+  <title>Bentolio</title>
+  <link rel="preload" href="assets/fonts/dm-serif-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/dm-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/photo.png" as="image">
+  <link rel="preload" href="assets/work.png" as="image">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <div class="loader" aria-hidden="true"></div>
+
+    <section class="bento-grid" aria-label="Bentolio wedding DJ portfolio">
+      <div class="cell nav-cell">
+        <div class="box reveal-from-bottom" data-reveal>
+          <nav class="nav">
+            <a class="logo" href="#">Bentolio</a>
+            <a class="template-link" href="https://rauftech.lemonsqueezy.com/buy/43d4f6ca-c525-497f-a77a-8148150335dc" target="_blank" rel="noopener noreferrer">
+              Buy Next.js template
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="cluster left-cluster">
+        <div class="cell intro-cell">
+          <div class="box intro reveal-from-right" data-reveal>
+            <img class="intro-icon content-spin-reverse" src="assets/icons/intro-icon.svg" alt="flower">
+            <h1 class="intro-heading content-rise">
+              Let's create dance floor <span>magic</span> for your special day
+            </h1>
+          </div>
+        </div>
+
+        <div class="cell portrait-cell">
+          <div class="portrait-wrap">
+            <div class="box portrait-card postloader" data-flip-target>
+              <img src="assets/photo.png" alt="human">
+            </div>
+            <div class="box portrait-card preloader" data-flip-source>
+              <img src="assets/photo.png" alt="human">
+            </div>
+          </div>
+        </div>
+
+        <div class="cell about-cell">
+          <div class="box about reveal-from-top" data-reveal>
+            <img class="about-icon content-spin" src="assets/icons/about-icon.svg" alt="disk">
+            <p class="about-text content-rise">
+              DJ Lisa is a passionate wedding DJ, acclaimed for blending diverse musical genres with expert crowd-reading skills. Based in Florida, she crafts personalized soundtracks that turn every wedding into an unforgettable celebration.
+            </p>
+          </div>
+        </div>
+
+        <div class="cell contact-cell desktop-contact">
+          <a class="box contact reveal-from-top" data-reveal href="mailto:hello@rauftech.com">
+            <span class="contact-bar content-drop">
+              <span>Have some questions?</span>
+              <img class="arrow" src="assets/icons/arrow-icon.svg" alt="arrow">
+            </span>
+            <span class="contact-heading content-rise">Contact <em>me</em></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="cluster right-cluster">
+        <div class="cell work-cell">
+          <div class="box work reveal-from-left" data-reveal>
+            <div class="work-scroll hide-scrollbar">
+              <button class="work-item is-active" type="button" aria-expanded="true">
+                <span class="work-row">
+                  <span class="work-title-wrap"><span class="work-title">First Dance</span></span>
+                  <span class="work-arrow-link">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                  </span>
+                </span>
+                <span class="thumbnail">
+                  <img src="assets/work.png" alt="bride and groom">
+                </span>
+              </button>
+
+              <button class="work-item" type="button" aria-expanded="false">
+                <span class="work-row">
+                  <span class="work-title-wrap"><span class="work-title">Cocktail Hour</span></span>
+                  <span class="work-arrow-link">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                  </span>
+                </span>
+                <span class="thumbnail">
+                  <img src="assets/work.png" alt="bride and groom">
+                </span>
+              </button>
+
+              <button class="work-item" type="button" aria-expanded="false">
+                <span class="work-row">
+                  <span class="work-title-wrap"><span class="work-title">Dinner Music</span></span>
+                  <span class="work-arrow-link">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                  </span>
+                </span>
+                <span class="thumbnail">
+                  <img src="assets/work.png" alt="bride and groom">
+                </span>
+              </button>
+
+              <button class="work-item" type="button" aria-expanded="false">
+                <span class="work-row">
+                  <span class="work-title-wrap"><span class="work-title">After Party</span></span>
+                  <span class="work-arrow-link">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                  </span>
+                </span>
+                <span class="thumbnail">
+                  <img src="assets/work.png" alt="bride and groom">
+                </span>
+              </button>
+
+              <button class="work-item" type="button" aria-expanded="false">
+                <span class="work-row">
+                  <span class="work-title-wrap"><span class="work-title">Last Dance</span></span>
+                  <span class="work-arrow-link">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                  </span>
+                </span>
+                <span class="thumbnail">
+                  <img src="assets/work.png" alt="bride and groom">
+                </span>
+              </button>
+            </div>
+            <div class="work-fade" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="cell contact-cell mobile-contact">
+          <a class="box contact reveal-from-top" data-reveal href="mailto:hello@rauftech.com">
+            <span class="contact-bar content-drop">
+              <span>Have some questions?</span>
+              <img class="arrow" src="assets/icons/arrow-icon.svg" alt="arrow">
+            </span>
+            <span class="contact-heading content-rise">Contact <em>me</em></span>
+          </a>
+        </div>
+
+        <div class="cell socials-cell">
+          <div class="box socials reveal-from-top" data-reveal>
+            <a href="https://www.figma.com/@lilcoderman" target="_blank" rel="noopener noreferrer"><span>Figma</span></a>
+            <a href="https://www.instagram.com/lilcoderman/" target="_blank" rel="noopener noreferrer"><span>Instagram</span></a>
+            <a href="https://github.com/abdulrauf11" target="_blank" rel="noopener noreferrer"><span>Github</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
