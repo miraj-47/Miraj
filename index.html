@@ -23,6 +23,29 @@
         <h2 class="work-preview-title" id="work-preview-title" data-work-preview-title></h2>
       </div>
     </div>
+    <div class="contact-preview" data-contact-preview hidden aria-hidden="true">
+      <div class="contact-preview-backdrop" data-contact-preview-close></div>
+      <div class="contact-preview-panel" role="dialog" aria-modal="true" aria-labelledby="contact-preview-title">
+        <button class="contact-preview-close" type="button" data-contact-preview-close aria-label="Close contact form">×</button>
+        <p class="contact-preview-kicker">Send a message</p>
+        <h2 class="contact-preview-title" id="contact-preview-title">Contact Miraj</h2>
+        <form class="contact-form" data-contact-form>
+          <label class="contact-field">
+            <span>Name</span>
+            <input type="text" name="name" autocomplete="name" required placeholder="Your name">
+          </label>
+          <label class="contact-field">
+            <span>Email</span>
+            <input type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <label class="contact-field contact-field-message">
+            <span>Message</span>
+            <textarea name="message" rows="5" required placeholder="Tell me about your project"></textarea>
+          </label>
+          <button class="contact-submit" type="submit">Open in Gmail</button>
+        </form>
+      </div>
+    </div>
 
     <section class="bento-grid" aria-label="Bentolio wedding DJ portfolio">
       <div class="cell nav-cell">
@@ -67,13 +90,13 @@
         </div>
 
         <div class="cell contact-cell desktop-contact">
-          <a class="box contact reveal-from-top" data-reveal href="mailto:hello@rauftech.com">
+          <button class="box contact contact-trigger reveal-from-top" data-reveal type="button" data-contact-trigger aria-haspopup="dialog" aria-controls="contact-preview-title">
             <span class="contact-bar content-drop">
               <span>Have some questions?</span>
               <img class="arrow" src="assets/icons/arrow-icon.svg" alt="arrow">
             </span>
             <span class="contact-heading content-rise">Contact <em>me</em></span>
-          </a>
+          </button>
         </div>
       </div>
 
@@ -254,13 +277,13 @@
         </div>
 
         <div class="cell contact-cell mobile-contact">
-          <a class="box contact reveal-from-top" data-reveal href="mailto:hello@rauftech.com">
+          <button class="box contact contact-trigger reveal-from-top" data-reveal type="button" data-contact-trigger aria-haspopup="dialog" aria-controls="contact-preview-title">
             <span class="contact-bar content-drop">
               <span>Have some questions?</span>
               <img class="arrow" src="assets/icons/arrow-icon.svg" alt="arrow">
             </span>
             <span class="contact-heading content-rise">Contact <em>me</em></span>
-          </a>
+          </button>
         </div>
 
         <div class="cell socials-cell">

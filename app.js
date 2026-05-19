@@ -7,6 +7,10 @@ const workPreview = document.querySelector("[data-work-preview]");
 const workPreviewImage = document.querySelector("[data-work-preview-image]");
 const workPreviewTitle = document.querySelector("[data-work-preview-title]");
 const workPreviewClosers = [...document.querySelectorAll("[data-work-preview-close]")];
+const contactPreview = document.querySelector("[data-contact-preview]");
+const contactForm = document.querySelector("[data-contact-form]");
+const contactTriggers = [...document.querySelectorAll("[data-contact-trigger]")];
+const contactPreviewClosers = [...document.querySelectorAll("[data-contact-preview-close]")];
 
 const easeOut = "cubic-bezier(0.22, 1, 0.36, 1)";
 const expoOut = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -29,7 +33,8 @@ function delay(ms) {
 }
 
 function syncBodyOverflow() {
-  document.body.style.overflow = workPreview && !workPreview.hidden ? "hidden" : "auto";
+  const isPreviewOpen = (workPreview && !workPreview.hidden) || (contactPreview && !contactPreview.hidden);
+  document.body.style.overflow = isPreviewOpen ? "hidden" : "auto";
 }
 
 function revealBox(box, index) {
@@ -207,6 +212,40 @@ function closeWorkPreview() {
   syncBodyOverflow();
 }
 
+function openContactPreview() {
+  if (!contactPreview || !contactForm) return;
+
+  contactPreview.hidden = false;
+  contactPreview.setAttribute("aria-hidden", "false");
+  syncBodyOverflow();
+
+  const firstField = contactForm.querySelector("input, textarea, button");
+  if (firstField) {
+    window.setTimeout(() => firstField.focus(), 0);
+  }
+}
+
+function closeContactPreview() {
+  if (!contactPreview) return;
+
+  contactPreview.hidden = true;
+  contactPreview.setAttribute("aria-hidden", "true");
+  syncBodyOverflow();
+}
+
+function buildGmailComposeUrl({ name, email, message }) {
+  const url = new URL("https://mail.google.com/mail/");
+  url.searchParams.set("view", "cm");
+  url.searchParams.set("fs", "1");
+  url.searchParams.set("to", "nurarts2024@gmail.com");
+  url.searchParams.set("su", `New message from ${name || "Website visitor"}`);
+  url.searchParams.set(
+    "body",
+    [`Name: ${name || ""}`, `Email: ${email || ""}`, "", message || ""].join("\n")
+  );
+  return url.toString();
+}
+
 function wireWorkPreviews() {
   workItems.forEach((item) => {
     const arrow = item.querySelector(".work-arrow-link");
@@ -227,6 +266,40 @@ function wireWorkPreviews() {
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && workPreview && !workPreview.hidden) {
       closeWorkPreview();
+    }
+  });
+}
+
+function wireContactPreview() {
+  contactTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", openContactPreview);
+  });
+
+  contactPreviewClosers.forEach((closer) => {
+    closer.addEventListener("click", closeContactPreview);
+  });
+
+  contactForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(contactForm);
+    const gmailUrl = buildGmailComposeUrl({
+      name: String(formData.get("name") || "").trim(),
+      email: String(formData.get("email") || "").trim(),
+      message: String(formData.get("message") || "").trim(),
+    });
+
+    closeContactPreview();
+
+    const nextWindow = window.open(gmailUrl, "_blank", "noopener,noreferrer");
+    if (!nextWindow) {
+      window.location.href = gmailUrl;
+    }
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && contactPreview && !contactPreview.hidden) {
+      closeContactPreview();
     }
   });
 }
@@ -283,6 +356,7 @@ async function boot() {
 
 wireArrowLoops();
 wireWorkPreviews();
+wireContactPreview();
 wireWorkAccordion();
 
 if (document.readyState === "complete") {
