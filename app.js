@@ -340,6 +340,7 @@ async function submitContactForm(formData) {
     name: String(formData.get("name") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     title: "Miraj Portfolio",
+    time: new Date().toLocaleString(),
     message: String(formData.get("message") || "").trim(),
   };
 
