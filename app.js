@@ -14,6 +14,22 @@ const contactPreviewClosers = [...document.querySelectorAll("[data-contact-previ
 const contactSubmit = document.querySelector(".contact-submit");
 const contactStatus = document.querySelector(".contact-status");
 
+// EmailJS configuration (provided)
+const EMAILJS_SERVICE = "service_ylqmyuk";
+const EMAILJS_TEMPLATE = "template_3u11ene";
+const EMAILJS_PUBLIC_KEY = "_x5BxfMuQI8FU_snm";
+
+if (typeof emailjs !== "undefined") {
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  } catch (e) {
+    // ignore init errors; SDK might not be loaded yet
+    console.warn("EmailJS init error", e);
+  }
+} else {
+  console.warn("EmailJS SDK not loaded. Email send will fail until SDK is available.");
+}
+
 const easeOut = "cubic-bezier(0.22, 1, 0.36, 1)";
 const expoOut = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -249,35 +265,25 @@ async function submitContactForm(formData) {
     throw new Error("No network connection. Check your internet connection and try again.");
   }
 
-  const controller = new AbortController();
-  const timeoutMs = 10000; // 10s timeout
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  if (typeof emailjs === "undefined") {
+    throw new Error("EmailJS SDK not available. Ensure the SDK script is loaded.");
+  }
 
+  const params = {
+    from_name: String(formData.get("name") || "").trim(),
+    from_email: String(formData.get("email") || "").trim(),
+    message: String(formData.get("message") || "").trim(),
+  };
+
+  // EmailJS has its own timeout handling; we wrap to provide clearer messages
   try {
-    const response = await fetch("https://formsubmit.co/ajax/nurarts2024@gmail.com", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-      },
-      body: formData,
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(result.message || `Server returned ${response.status}`);
-    }
-
+    const sendPromise = emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, params);
+    const timeoutMs = 15000;
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("EmailJS request timed out.")), timeoutMs));
+    const result = await Promise.race([sendPromise, timeoutPromise]);
     return result;
   } catch (err) {
-    clearTimeout(timeoutId);
-    // Normalize AbortError message
-    if (err && err.name === "AbortError") {
-      throw new Error("Request timed out. The server may be blocking CORS or is unreachable.");
-    }
-    throw err;
+    throw new Error(err && err.text ? err.text : err.message || "EmailJS send failed.");
   }
 }
 
