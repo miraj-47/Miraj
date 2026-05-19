@@ -30,6 +30,50 @@ if (typeof emailjs !== "undefined") {
   console.warn("EmailJS SDK not loaded. Email send will fail until SDK is available.");
 }
 
+async function ensureEmailJSSDK(timeoutMs = 10000) {
+  if (typeof emailjs !== "undefined") {
+    try {
+      // ensure initialized
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+    } catch (e) {}
+    return;
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.emailjs.com/sdk/3.2.0/email.min.js";
+    script.async = true;
+
+    const timeoutId = setTimeout(() => {
+      script.onload = null;
+      script.onerror = null;
+      reject(new Error("EmailJS SDK load timeout"));
+    }, timeoutMs);
+
+    script.onload = () => {
+      clearTimeout(timeoutId);
+      if (typeof emailjs === "undefined") {
+        reject(new Error("EmailJS SDK loaded but `emailjs` not found."));
+        return;
+      }
+      try {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+      } catch (e) {
+        // still ok, continue
+        console.warn("EmailJS init after load failed", e);
+      }
+      resolve();
+    };
+
+    script.onerror = (e) => {
+      clearTimeout(timeoutId);
+      reject(new Error("EmailJS SDK failed to load"));
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
 const easeOut = "cubic-bezier(0.22, 1, 0.36, 1)";
 const expoOut = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -266,7 +310,13 @@ async function submitContactForm(formData) {
   }
 
   if (typeof emailjs === "undefined") {
-    throw new Error("EmailJS SDK not available. Ensure the SDK script is loaded.");
+    // try to load SDK dynamically once
+    try {
+      setContactStatus("Loading email SDK...");
+      await ensureEmailJSSDK(10000);
+    } catch (err) {
+      throw new Error("EmailJS SDK not available. Ensure the SDK script is loaded.");
+    }
   }
 
   const params = {
