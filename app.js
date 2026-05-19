@@ -40,37 +40,53 @@ async function ensureEmailJSSDK(timeoutMs = 10000) {
   }
 
   return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.emailjs.com/sdk/3.2.0/email.min.js";
-    script.async = true;
+    const sources = [
+      "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js",
+      "https://unpkg.com/@emailjs/browser@4/dist/email.min.js",
+    ];
 
-    const timeoutId = setTimeout(() => {
-      script.onload = null;
-      script.onerror = null;
-      reject(new Error("EmailJS SDK load timeout"));
-    }, timeoutMs);
-
-    script.onload = () => {
-      clearTimeout(timeoutId);
-      if (typeof emailjs === "undefined") {
-        reject(new Error("EmailJS SDK loaded but `emailjs` not found."));
+    const tryLoad = (index = 0) => {
+      if (index >= sources.length) {
+        reject(new Error("EmailJS SDK failed to load from all sources"));
         return;
       }
-      try {
-        emailjs.init(EMAILJS_PUBLIC_KEY);
-      } catch (e) {
-        // still ok, continue
-        console.warn("EmailJS init after load failed", e);
-      }
-      resolve();
+
+      const script = document.createElement("script");
+      script.src = sources[index];
+      script.async = true;
+
+      const timeoutId = setTimeout(() => {
+        script.onload = null;
+        script.onerror = null;
+        script.remove();
+        tryLoad(index + 1);
+      }, timeoutMs);
+
+      script.onload = () => {
+        clearTimeout(timeoutId);
+        if (typeof emailjs === "undefined") {
+          script.remove();
+          tryLoad(index + 1);
+          return;
+        }
+        try {
+          emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (e) {
+          console.warn("EmailJS init after load failed", e);
+        }
+        resolve();
+      };
+
+      script.onerror = () => {
+        clearTimeout(timeoutId);
+        script.remove();
+        tryLoad(index + 1);
+      };
+
+      document.head.appendChild(script);
     };
 
-    script.onerror = (e) => {
-      clearTimeout(timeoutId);
-      reject(new Error("EmailJS SDK failed to load"));
-    };
-
-    document.head.appendChild(script);
+    tryLoad(0);
   });
 }
 
