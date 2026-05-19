@@ -11,6 +11,8 @@ const contactPreview = document.querySelector("[data-contact-preview]");
 const contactForm = document.querySelector("[data-contact-form]");
 const contactTriggers = [...document.querySelectorAll("[data-contact-trigger]")];
 const contactPreviewClosers = [...document.querySelectorAll("[data-contact-preview-close]")];
+const contactSubmit = document.querySelector(".contact-submit");
+const contactStatus = document.querySelector(".contact-status");
 
 const easeOut = "cubic-bezier(0.22, 1, 0.36, 1)";
 const expoOut = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -217,6 +219,7 @@ function openContactPreview() {
 
   contactPreview.hidden = false;
   contactPreview.setAttribute("aria-hidden", "false");
+  setContactStatus("");
   syncBodyOverflow();
 
   const firstField = contactForm.querySelector("input, textarea, button");
@@ -233,17 +236,29 @@ function closeContactPreview() {
   syncBodyOverflow();
 }
 
-function buildGmailComposeUrl({ name, email, message }) {
-  const url = new URL("https://mail.google.com/mail/");
-  url.searchParams.set("view", "cm");
-  url.searchParams.set("fs", "1");
-  url.searchParams.set("to", "nurarts2024@gmail.com");
-  url.searchParams.set("su", `New message from ${name || "Website visitor"}`);
-  url.searchParams.set(
-    "body",
-    [`Name: ${name || ""}`, `Email: ${email || ""}`, "", message || ""].join("\n")
-  );
-  return url.toString();
+function setContactStatus(message, state = "") {
+  if (!contactStatus) return;
+
+  contactStatus.textContent = message;
+  contactStatus.classList.toggle("is-success", state === "success");
+  contactStatus.classList.toggle("is-error", state === "error");
+}
+
+async function submitContactForm(formData) {
+  const response = await fetch("https://formsubmit.co/ajax/nurarts2024@gmail.com", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+    },
+    body: formData,
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.message || "Unable to send message right now.");
+  }
+
+  return result;
 }
 
 function wireWorkPreviews() {
@@ -283,18 +298,33 @@ function wireContactPreview() {
     event.preventDefault();
 
     const formData = new FormData(contactForm);
-    const gmailUrl = buildGmailComposeUrl({
-      name: String(formData.get("name") || "").trim(),
-      email: String(formData.get("email") || "").trim(),
-      message: String(formData.get("message") || "").trim(),
-    });
+    formData.set("_subject", `New message from ${String(formData.get("name") || "Website visitor").trim()}`);
+    formData.set("_captcha", "false");
+    formData.set("_template", "table");
 
-    closeContactPreview();
-
-    const nextWindow = window.open(gmailUrl, "_blank", "noopener,noreferrer");
-    if (!nextWindow) {
-      window.location.href = gmailUrl;
+    if (contactSubmit) {
+      contactSubmit.disabled = true;
     }
+
+    setContactStatus("Sending message...");
+
+    submitContactForm(formData)
+      .then(() => {
+        contactForm.reset();
+        setContactStatus("Message sent successfully.", "success");
+        window.setTimeout(() => {
+          closeContactPreview();
+          setContactStatus("");
+        }, 1200);
+      })
+      .catch((error) => {
+        setContactStatus(error.message || "Message could not be sent.", "error");
+      })
+      .finally(() => {
+        if (contactSubmit) {
+          contactSubmit.disabled = false;
+        }
+      });
   });
 
   window.addEventListener("keydown", (event) => {
