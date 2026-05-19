@@ -245,20 +245,40 @@ function setContactStatus(message, state = "") {
 }
 
 async function submitContactForm(formData) {
-  const response = await fetch("https://formsubmit.co/ajax/nurarts2024@gmail.com", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-    },
-    body: formData,
-  });
-
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(result.message || "Unable to send message right now.");
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    throw new Error("No network connection. Check your internet connection and try again.");
   }
 
-  return result;
+  const controller = new AbortController();
+  const timeoutMs = 10000; // 10s timeout
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch("https://formsubmit.co/ajax/nurarts2024@gmail.com", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+      body: formData,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.message || `Server returned ${response.status}`);
+    }
+
+    return result;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    // Normalize AbortError message
+    if (err && err.name === "AbortError") {
+      throw new Error("Request timed out. The server may be blocking CORS or is unreachable.");
+    }
+    throw err;
+  }
 }
 
 function wireWorkPreviews() {
