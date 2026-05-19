@@ -336,6 +336,7 @@ async function submitContactForm(formData) {
   }
 
   const params = {
+    to_email: "nurarts2024@gmail.com",
     from_name: String(formData.get("name") || "").trim(),
     from_email: String(formData.get("email") || "").trim(),
     message: String(formData.get("message") || "").trim(),
