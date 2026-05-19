@@ -3,6 +3,10 @@ const revealBoxes = [...document.querySelectorAll("[data-reveal]")];
 const preloader = document.querySelector("[data-flip-source]");
 const postloader = document.querySelector("[data-flip-target]");
 const workItems = [...document.querySelectorAll(".work-item")];
+const workPreview = document.querySelector("[data-work-preview]");
+const workPreviewImage = document.querySelector("[data-work-preview-image]");
+const workPreviewTitle = document.querySelector("[data-work-preview-title]");
+const workPreviewClosers = [...document.querySelectorAll("[data-work-preview-close]")];
 
 const easeOut = "cubic-bezier(0.22, 1, 0.36, 1)";
 const expoOut = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -22,6 +26,10 @@ function animate(element, keyframes, options = {}) {
 
 function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function syncBodyOverflow() {
+  document.body.style.overflow = workPreview && !workPreview.hidden ? "hidden" : "auto";
 }
 
 function revealBox(box, index) {
@@ -176,6 +184,53 @@ function wireArrowLoops() {
   });
 }
 
+function openWorkPreview(item) {
+  if (!workPreview || !workPreviewImage || !workPreviewTitle || !item) return;
+
+  const image = item.querySelector(".thumbnail img");
+  const title = item.querySelector(".work-title")?.textContent?.trim() || "Work preview";
+  if (!image) return;
+
+  workPreviewImage.src = image.currentSrc || image.src;
+  workPreviewImage.alt = image.alt || title;
+  workPreviewTitle.textContent = title;
+  workPreview.hidden = false;
+  workPreview.setAttribute("aria-hidden", "false");
+  syncBodyOverflow();
+}
+
+function closeWorkPreview() {
+  if (!workPreview) return;
+
+  workPreview.hidden = true;
+  workPreview.setAttribute("aria-hidden", "true");
+  syncBodyOverflow();
+}
+
+function wireWorkPreviews() {
+  workItems.forEach((item) => {
+    const arrow = item.querySelector(".work-arrow-link");
+
+    if (arrow) {
+      arrow.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openWorkPreview(item);
+      });
+    }
+  });
+
+  workPreviewClosers.forEach((closer) => {
+    closer.addEventListener("click", closeWorkPreview);
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && workPreview && !workPreview.hidden) {
+      closeWorkPreview();
+    }
+  });
+}
+
 function setActiveWorkItem(nextItem) {
   workItems.forEach((item) => {
     const isActive = item === nextItem;
@@ -223,10 +278,11 @@ async function boot() {
   revealBoxes.forEach(revealBox);
   revealInnerContent();
   await delay(1500);
-  document.body.style.overflow = "auto";
+  syncBodyOverflow();
 }
 
 wireArrowLoops();
+wireWorkPreviews();
 wireWorkAccordion();
 
 if (document.readyState === "complete") {

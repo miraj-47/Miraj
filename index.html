@@ -15,6 +15,14 @@
 <body>
   <main class="page">
     <div class="loader" aria-hidden="true"></div>
+    <div class="work-preview" data-work-preview hidden aria-hidden="true">
+      <div class="work-preview-backdrop" data-work-preview-close></div>
+      <div class="work-preview-panel" role="dialog" aria-modal="true" aria-labelledby="work-preview-title">
+        <button class="work-preview-close" type="button" data-work-preview-close aria-label="Close preview">×</button>
+        <img class="work-preview-image" data-work-preview-image src="" alt="">
+        <h2 class="work-preview-title" id="work-preview-title" data-work-preview-title></h2>
+      </div>
+    </div>
 
     <section class="bento-grid" aria-label="Bentolio wedding DJ portfolio">
       <div class="cell nav-cell">
