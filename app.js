@@ -16,7 +16,7 @@ const contactStatus = document.querySelector(".contact-status");
 
 // EmailJS configuration (provided)
 const EMAILJS_SERVICE = "service_ylqmyuk";
-const EMAILJS_TEMPLATE = "template_3u11ene";
+const EMAILJS_TEMPLATE = "template_zenekmh";
 const EMAILJS_PUBLIC_KEY = "_x5BxfMuQI8FU_snm";
 
 if (typeof emailjs !== "undefined") {
@@ -337,8 +337,9 @@ async function submitContactForm(formData) {
 
   const params = {
     to_email: "nurarts2024@gmail.com",
-    from_name: String(formData.get("name") || "").trim(),
-    from_email: String(formData.get("email") || "").trim(),
+    name: String(formData.get("name") || "").trim(),
+    email: String(formData.get("email") || "").trim(),
+    title: "Miraj Portfolio",
     message: String(formData.get("message") || "").trim(),
   };
 
