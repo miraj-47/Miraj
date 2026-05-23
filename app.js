@@ -8,7 +8,10 @@ const easeOut = "cubic-bezier(0.22, 1, 0.36, 1)";
 const expoOut = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 document.body.style.overflow = "hidden";
-window.scrollTo({ top: 0 });
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+window.scrollTo(0, 0);
 
 function animate(element, keyframes, options = {}) {
   if (!element) return Promise.resolve();
@@ -209,6 +212,9 @@ function wireWorkAccordion() {
 }
 
 async function boot() {
+  if (boot.hasRun) return;
+  boot.hasRun = true;
+
   await animate(loader, [
     { transform: "scaleX(0)" },
     { transform: "scaleX(1)" },
@@ -229,8 +235,8 @@ async function boot() {
 wireArrowLoops();
 wireWorkAccordion();
 
-if (document.readyState === "complete") {
-  boot();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => requestAnimationFrame(boot), { once: true });
 } else {
-  window.addEventListener("load", boot, { once: true });
+  requestAnimationFrame(boot);
 }

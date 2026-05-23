@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Bentolio recreation with matching bento layout and interactions.">
   <title>Bentolio</title>
+  <link rel="preconnect" href="https://rauftech.lemonsqueezy.com">
   <link rel="preload" href="assets/fonts/dm-serif-regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/dm-serif-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/photo.png" as="image">
-  <link rel="preload" href="assets/work.png" as="image">
+  <link rel="preload" href="assets/photo.jpg" as="image">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -31,7 +30,7 @@
       <div class="cluster left-cluster">
         <div class="cell intro-cell">
           <div class="box intro reveal-from-right" data-reveal>
-            <img class="intro-icon content-spin-reverse" src="assets/icons/intro-icon.svg" alt="flower">
+            <img class="intro-icon content-spin-reverse" src="assets/icons/intro-icon.svg" width="96" height="96" alt="flower">
             <h1 class="intro-heading content-rise">
               Let's create dance floor <span>magic</span> for your special day
             </h1>
@@ -41,17 +40,17 @@
         <div class="cell portrait-cell">
           <div class="portrait-wrap">
             <div class="box portrait-card postloader" data-flip-target>
-              <img src="assets/photo.png" alt="human">
+              <img src="assets/photo.jpg" width="896" height="1195" alt="human" fetchpriority="high" decoding="async">
             </div>
             <div class="box portrait-card preloader" data-flip-source>
-              <img src="assets/photo.png" alt="human">
+              <img src="assets/photo.jpg" width="896" height="1195" alt="human" fetchpriority="high" decoding="async">
             </div>
           </div>
         </div>
 
         <div class="cell about-cell">
           <div class="box about reveal-from-top" data-reveal>
-            <img class="about-icon content-spin" src="assets/icons/about-icon.svg" alt="disk">
+            <img class="about-icon content-spin" src="assets/icons/about-icon.svg" width="44" height="44" alt="disk" loading="lazy" decoding="async">
             <p class="about-text content-rise">
               DJ Lisa is a passionate wedding DJ, acclaimed for blending diverse musical genres with expert crowd-reading skills. Based in Florida, she crafts personalized soundtracks that turn every wedding into an unforgettable celebration.
             </p>
@@ -62,7 +61,7 @@
           <a class="box contact reveal-from-top" data-reveal href="mailto:hello@rauftech.com">
             <span class="contact-bar content-drop">
               <span>Have some questions?</span>
-              <img class="arrow" src="assets/icons/arrow-icon.svg" alt="arrow">
+              <img class="arrow" src="assets/icons/arrow-icon.svg" width="22" height="22" alt="arrow" loading="lazy" decoding="async">
             </span>
             <span class="contact-heading content-rise">Contact <em>me</em></span>
           </a>
@@ -77,11 +76,11 @@
                 <span class="work-row">
                   <span class="work-title-wrap"><span class="work-title">First Dance</span></span>
                   <span class="work-arrow-link">
-                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" width="14" height="14" alt="arrow" loading="lazy" decoding="async">
                   </span>
                 </span>
                 <span class="thumbnail">
-                  <img src="assets/work.png" alt="bride and groom">
+                  <img src="assets/work.jpg" width="1025" height="691" alt="bride and groom" loading="eager" decoding="async">
                 </span>
               </button>
 
@@ -89,11 +88,11 @@
                 <span class="work-row">
                   <span class="work-title-wrap"><span class="work-title">Cocktail Hour</span></span>
                   <span class="work-arrow-link">
-                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" width="14" height="14" alt="arrow" loading="lazy" decoding="async">
                   </span>
                 </span>
                 <span class="thumbnail">
-                  <img src="assets/work.png" alt="bride and groom">
+                  <img src="assets/work.jpg" width="1025" height="691" alt="bride and groom" loading="lazy" decoding="async">
                 </span>
               </button>
 
@@ -101,11 +100,11 @@
                 <span class="work-row">
                   <span class="work-title-wrap"><span class="work-title">Dinner Music</span></span>
                   <span class="work-arrow-link">
-                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" width="14" height="14" alt="arrow" loading="lazy" decoding="async">
                   </span>
                 </span>
                 <span class="thumbnail">
-                  <img src="assets/work.png" alt="bride and groom">
+                  <img src="assets/work.jpg" width="1025" height="691" alt="bride and groom" loading="lazy" decoding="async">
                 </span>
               </button>
 
@@ -113,11 +112,11 @@
                 <span class="work-row">
                   <span class="work-title-wrap"><span class="work-title">After Party</span></span>
                   <span class="work-arrow-link">
-                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" width="14" height="14" alt="arrow" loading="lazy" decoding="async">
                   </span>
                 </span>
                 <span class="thumbnail">
-                  <img src="assets/work.png" alt="bride and groom">
+                  <img src="assets/work.jpg" width="1025" height="691" alt="bride and groom" loading="lazy" decoding="async">
                 </span>
               </button>
 
@@ -125,11 +124,11 @@
                 <span class="work-row">
                   <span class="work-title-wrap"><span class="work-title">Last Dance</span></span>
                   <span class="work-arrow-link">
-                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" alt="arrow">
+                    <img class="arrow work-arrow" src="assets/icons/arrow-icon-black.svg" width="14" height="14" alt="arrow" loading="lazy" decoding="async">
                   </span>
                 </span>
                 <span class="thumbnail">
-                  <img src="assets/work.png" alt="bride and groom">
+                  <img src="assets/work.jpg" width="1025" height="691" alt="bride and groom" loading="lazy" decoding="async">
                 </span>
               </button>
             </div>
@@ -141,7 +140,7 @@
           <a class="box contact reveal-from-top" data-reveal href="mailto:hello@rauftech.com">
             <span class="contact-bar content-drop">
               <span>Have some questions?</span>
-              <img class="arrow" src="assets/icons/arrow-icon.svg" alt="arrow">
+              <img class="arrow" src="assets/icons/arrow-icon.svg" width="22" height="22" alt="arrow" loading="lazy" decoding="async">
             </span>
             <span class="contact-heading content-rise">Contact <em>me</em></span>
           </a>
