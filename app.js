@@ -2,7 +2,96 @@ const loader = document.querySelector(".loader");
 const revealBoxes = [...document.querySelectorAll("[data-reveal]")];
 const preloader = document.querySelector("[data-flip-source]");
 const postloader = document.querySelector("[data-flip-target]");
-const workItems = [...document.querySelectorAll(".work-item")];
+const workSections = [...document.querySelectorAll("[data-work-section]")];
+const workPreview = document.querySelector("[data-work-preview]");
+const workPreviewImage = document.querySelector("[data-work-preview-image]");
+const workPreviewTitle = document.querySelector("[data-work-preview-title]");
+const workPreviewCounter = document.querySelector("[data-work-preview-counter]");
+const workPreviewPrevious = document.querySelector("[data-work-preview-prev]");
+const workPreviewNext = document.querySelector("[data-work-preview-next]");
+const workPreviewClosers = [...document.querySelectorAll("[data-work-preview-close]")];
+const contactPreview = document.querySelector("[data-contact-preview]");
+const contactForm = document.querySelector("[data-contact-form]");
+const contactTriggers = [...document.querySelectorAll("[data-contact-trigger]")];
+const contactPreviewClosers = [...document.querySelectorAll("[data-contact-preview-close]")];
+const contactSubmit = document.querySelector(".contact-submit");
+const contactStatus = document.querySelector(".contact-status");
+
+// EmailJS configuration (provided)
+const EMAILJS_SERVICE = "service_ylqmyuk";
+const EMAILJS_TEMPLATE = "template_zenekmh";
+const EMAILJS_PUBLIC_KEY = "_x5BxfMuQI8FU_snm";
+
+if (typeof emailjs !== "undefined") {
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  } catch (e) {
+    // ignore init errors; SDK might not be loaded yet
+    console.warn("EmailJS init error", e);
+  }
+} else {
+  console.warn("EmailJS SDK not loaded. Email send will fail until SDK is available.");
+}
+
+async function ensureEmailJSSDK(timeoutMs = 10000) {
+  if (typeof emailjs !== "undefined") {
+    try {
+      // ensure initialized
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+    } catch (e) {}
+    return;
+  }
+
+  return new Promise((resolve, reject) => {
+    const sources = [
+      "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js",
+      "https://unpkg.com/@emailjs/browser@4/dist/email.min.js",
+    ];
+
+    const tryLoad = (index = 0) => {
+      if (index >= sources.length) {
+        reject(new Error("EmailJS SDK failed to load from all sources"));
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = sources[index];
+      script.async = true;
+
+      const timeoutId = setTimeout(() => {
+        script.onload = null;
+        script.onerror = null;
+        script.remove();
+        tryLoad(index + 1);
+      }, timeoutMs);
+
+      script.onload = () => {
+        clearTimeout(timeoutId);
+        if (typeof emailjs === "undefined") {
+          script.remove();
+          tryLoad(index + 1);
+          return;
+        }
+        try {
+          emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (e) {
+          console.warn("EmailJS init after load failed", e);
+        }
+        resolve();
+      };
+
+      script.onerror = () => {
+        clearTimeout(timeoutId);
+        script.remove();
+        tryLoad(index + 1);
+      };
+
+      document.head.appendChild(script);
+    };
+
+    tryLoad(0);
+  });
+}
 
 const easeOut = "cubic-bezier(0.22, 1, 0.36, 1)";
 const expoOut = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -25,6 +114,11 @@ function animate(element, keyframes, options = {}) {
 
 function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function syncBodyOverflow() {
+  const isPreviewOpen = (workPreview && !workPreview.hidden) || (contactPreview && !contactPreview.hidden);
+  document.body.style.overflow = isPreviewOpen ? "hidden" : "auto";
 }
 
 function revealBox(box, index) {
@@ -83,7 +177,7 @@ function revealInnerContent() {
     ], { duration: 700, delay: 1000 + index * 180 });
   });
 
-  document.querySelectorAll(".work-item").forEach((element, index) => {
+  document.querySelectorAll("[data-work-section]").forEach((element, index) => {
     animate(element, [
       { borderBottomColor: "rgba(86, 84, 73, 0)" },
       { borderBottomColor: "rgba(86, 84, 73, 1)" },
@@ -179,35 +273,340 @@ function wireArrowLoops() {
   });
 }
 
-function setActiveWorkItem(nextItem) {
-  workItems.forEach((item) => {
-    const isActive = item === nextItem;
-    const thumbnail = item.querySelector(".thumbnail");
-    const targetHeight = thumbnail ? `${thumbnail.clientWidth * 2 / 3}px` : "0px";
+function openWorkPreview(item) {
+  if (!workPreview || !workPreviewImage || !workPreviewTitle || !item) return;
 
-    item.classList.toggle("is-active", isActive);
-    item.setAttribute("aria-expanded", String(isActive));
+  const previewSource = item.dataset.workPreviewSrc || item.querySelector("img")?.currentSrc || item.querySelector("img")?.src;
+  const title = item.dataset.workPreviewTitle || item.querySelector(".work-subtitle")?.textContent?.trim() || "Work preview";
+  if (!previewSource) return;
 
-    if (thumbnail) {
-      thumbnail.style.height = isActive ? targetHeight : "0px";
-      thumbnail.style.marginTop = isActive ? "1rem" : "0px";
+  workPreviewImage.src = previewSource;
+  workPreviewImage.alt = title;
+  workPreviewTitle.textContent = title;
+  workPreview.hidden = false;
+  workPreview.setAttribute("aria-hidden", "false");
+  updateWorkPreviewNavigation(item.closest("[data-work-section]"));
+  syncBodyOverflow();
+}
+
+function getSectionPreviewItems(section) {
+  return section ? [...section.querySelectorAll("[data-work-preview-trigger]")] : [];
+}
+
+function getActiveSectionPreviewItem(section) {
+  return section ? section.querySelector("[data-work-preview-trigger].is-active") : null;
+}
+
+function refreshWorkSectionLayout(section) {
+  const body = section?.querySelector("[data-work-section-body]");
+  if (!body) return;
+
+  body.style.height = `${body.scrollHeight}px`;
+  body.style.marginTop = "1rem";
+}
+
+function setActiveWorkPreviewItem(section, nextIndex) {
+  const items = getSectionPreviewItems(section);
+  if (!section || !items.length) return;
+
+  const normalizedIndex = ((nextIndex % items.length) + items.length) % items.length;
+
+  items.forEach((item, index) => {
+    item.classList.toggle("is-active", index === normalizedIndex);
+  });
+
+  const counter = section.querySelector("[data-work-section-counter]");
+  if (counter) {
+    counter.textContent = `${normalizedIndex + 1} / ${items.length}`;
+  }
+
+  refreshWorkSectionLayout(section);
+}
+
+function moveWorkSectionPreview(section, step) {
+  const items = getSectionPreviewItems(section);
+  if (!section || items.length < 2) return;
+
+  const activeItem = getActiveSectionPreviewItem(section) || items[0];
+  const currentIndex = Math.max(0, items.indexOf(activeItem));
+  setActiveWorkPreviewItem(section, currentIndex + step);
+
+  return getActiveSectionPreviewItem(section) || items[0];
+}
+
+function updateWorkPreviewNavigation(section) {
+  const previewItems = getSectionPreviewItems(section || workPreviewState.section);
+  const total = previewItems.length;
+  const index = Math.max(0, workPreviewState.index);
+
+  if (workPreviewCounter) {
+    workPreviewCounter.textContent = total ? `${index + 1} / ${total}` : "";
+  }
+
+  if (workPreviewPrevious) {
+    workPreviewPrevious.disabled = total < 2;
+  }
+
+  if (workPreviewNext) {
+    workPreviewNext.disabled = total < 2;
+  }
+}
+
+const workPreviewState = {
+  section: null,
+  items: [],
+  index: 0,
+};
+
+function openWorkPreviewFromItem(item) {
+  const section = item.closest("[data-work-section]");
+  const items = getSectionPreviewItems(section);
+  const index = items.indexOf(item);
+
+  if (section) {
+    workPreviewState.section = section;
+    workPreviewState.items = items;
+    workPreviewState.index = index >= 0 ? index : 0;
+  }
+
+  openWorkPreview(item);
+}
+
+function navigateWorkPreview(step) {
+  const { section, items } = workPreviewState;
+  if (!section || items.length < 2) return;
+
+  const nextIndex = (workPreviewState.index + step + items.length) % items.length;
+  workPreviewState.index = nextIndex;
+  openWorkPreview(items[nextIndex]);
+}
+
+function closeWorkPreview() {
+  if (!workPreview) return;
+
+  workPreview.hidden = true;
+  workPreview.setAttribute("aria-hidden", "true");
+  syncBodyOverflow();
+}
+
+function openContactPreview() {
+  if (!contactPreview || !contactForm) return;
+
+  contactPreview.hidden = false;
+  contactPreview.setAttribute("aria-hidden", "false");
+  setContactStatus("");
+  syncBodyOverflow();
+
+  const firstField = contactForm.querySelector("input, textarea, button");
+  if (firstField) {
+    window.setTimeout(() => firstField.focus(), 0);
+  }
+}
+
+function closeContactPreview() {
+  if (!contactPreview) return;
+
+  contactPreview.hidden = true;
+  contactPreview.setAttribute("aria-hidden", "true");
+  syncBodyOverflow();
+}
+
+function setContactStatus(message, state = "") {
+  if (!contactStatus) return;
+
+  contactStatus.textContent = message;
+  contactStatus.classList.toggle("is-success", state === "success");
+  contactStatus.classList.toggle("is-error", state === "error");
+}
+
+async function submitContactForm(formData) {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    throw new Error("No network connection. Check your internet connection and try again.");
+  }
+
+  if (typeof emailjs === "undefined") {
+    // try to load SDK dynamically once
+    try {
+      setContactStatus("Loading email SDK...");
+      await ensureEmailJSSDK(10000);
+    } catch (err) {
+      throw new Error("EmailJS SDK not available. Ensure the SDK script is loaded.");
+    }
+  }
+
+  const params = {
+    to_email: "nurarts2024@gmail.com",
+    name: String(formData.get("name") || "").trim(),
+    email: String(formData.get("email") || "").trim(),
+    title: "Miraj Portfolio",
+    time: new Date().toLocaleString(),
+    message: String(formData.get("message") || "").trim(),
+  };
+
+  // EmailJS has its own timeout handling; we wrap to provide clearer messages
+  try {
+    const sendPromise = emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, params);
+    const timeoutMs = 15000;
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("EmailJS request timed out.")), timeoutMs));
+    const result = await Promise.race([sendPromise, timeoutPromise]);
+    return result;
+  } catch (err) {
+    throw new Error(err && err.text ? err.text : err.message || "EmailJS send failed.");
+  }
+}
+
+function wireWorkPreviews() {
+  document.querySelectorAll("[data-work-preview-trigger]").forEach((item) => {
+    item.addEventListener("click", () => {
+      openWorkPreviewFromItem(item);
+    });
+  });
+
+  workPreviewPrevious?.addEventListener("click", () => navigateWorkPreview(-1));
+  workPreviewNext?.addEventListener("click", () => navigateWorkPreview(1));
+
+  workPreviewClosers.forEach((closer) => {
+    closer.addEventListener("click", closeWorkPreview);
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && workPreview && !workPreview.hidden) {
+      closeWorkPreview();
+      return;
+    }
+
+    if (!workPreview || workPreview.hidden) {
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      navigateWorkPreview(-1);
+    }
+
+    if (event.key === "ArrowRight") {
+      navigateWorkPreview(1);
+    }
+  });
+}
+
+function wireContactPreview() {
+  contactTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", openContactPreview);
+  });
+
+  contactPreviewClosers.forEach((closer) => {
+    closer.addEventListener("click", closeContactPreview);
+  });
+
+  contactForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(contactForm);
+    formData.set("_subject", `New message from ${String(formData.get("name") || "Website visitor").trim()}`);
+    formData.set("_captcha", "false");
+    formData.set("_template", "table");
+
+    if (contactSubmit) {
+      contactSubmit.disabled = true;
+    }
+
+    setContactStatus("Sending message...");
+
+    submitContactForm(formData)
+      .then(() => {
+        contactForm.reset();
+        setContactStatus("Message sent successfully.", "success");
+        window.setTimeout(() => {
+          closeContactPreview();
+          setContactStatus("");
+        }, 1200);
+      })
+      .catch((error) => {
+        setContactStatus(error.message || "Message could not be sent.", "error");
+      })
+      .finally(() => {
+        if (contactSubmit) {
+          contactSubmit.disabled = false;
+        }
+      });
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && contactPreview && !contactPreview.hidden) {
+      closeContactPreview();
+    }
+  });
+}
+
+function setActiveWorkSection(nextSection) {
+  workSections.forEach((section) => {
+    const isActive = section === nextSection;
+    const body = section.querySelector("[data-work-section-body]");
+    const toggle = section.querySelector("[data-work-section-toggle]");
+
+    section.classList.toggle("is-active", isActive);
+    toggle?.setAttribute("aria-expanded", String(isActive));
+
+    if (body) {
+      body.style.height = isActive ? `${body.scrollHeight}px` : "0px";
+      body.style.marginTop = isActive ? "1rem" : "0px";
     }
   });
 }
 
 function wireWorkAccordion() {
-  setActiveWorkItem(document.querySelector(".work-item.is-active") || workItems[0]);
+  workSections.forEach((section) => {
+    const slides = getSectionPreviewItems(section);
+    const initialIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains("is-active")));
+    setActiveWorkPreviewItem(section, initialIndex);
 
-  workItems.forEach((item) => {
-    item.addEventListener("click", () => {
-      if (item.classList.contains("is-active")) return;
-      setActiveWorkItem(item);
+    section.querySelector("[data-work-section-preview]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const activeItem = getActiveSectionPreviewItem(section) || getSectionPreviewItems(section)[0];
+      if (activeItem) {
+        openWorkPreviewFromItem(activeItem);
+      }
+    });
+
+    section.querySelector("[data-work-section-prev]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const item = moveWorkSectionPreview(section, -1);
+      if (item) {
+        openWorkPreviewFromItem(item);
+      }
+    });
+
+    section.querySelector("[data-work-section-next]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const item = moveWorkSectionPreview(section, 1);
+      if (item) {
+        openWorkPreviewFromItem(item);
+      }
+    });
+  });
+
+  setActiveWorkSection(document.querySelector("[data-work-section].is-active") || workSections[0]);
+
+  workSections.forEach((section) => {
+    const toggle = section.querySelector("[data-work-section-toggle]");
+
+    toggle?.addEventListener("click", () => {
+      if (section.classList.contains("is-active")) return;
+
+      setActiveWorkSection(section);
+      refreshWorkSectionLayout(section);
     });
   });
 
   window.addEventListener("resize", () => {
-    const active = document.querySelector(".work-item.is-active");
-    if (active) setActiveWorkItem(active);
+    const active = document.querySelector("[data-work-section].is-active");
+    if (active) {
+      setActiveWorkSection(active);
+      refreshWorkSectionLayout(active);
+    }
   });
 }
 
@@ -229,10 +628,12 @@ async function boot() {
   revealBoxes.forEach(revealBox);
   revealInnerContent();
   await delay(1500);
-  document.body.style.overflow = "auto";
+  syncBodyOverflow();
 }
 
 wireArrowLoops();
+wireWorkPreviews();
+wireContactPreview();
 wireWorkAccordion();
 
 if (document.readyState === "loading") {
